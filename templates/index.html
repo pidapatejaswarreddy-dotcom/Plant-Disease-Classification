@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Plant Disease Classification using Deep Learning</h1>
+  <p class="lead">Upload a photo of a single plant leaf and a MobileNetV2 neural network trained on the PlantVillage dataset
+  predicts which known crop/disease class it most resembles.</p>
+  <a class="btn" href="{{ url_for('detect') }}">Detect disease</a>
+  {% if not model.ready %}<p class="notice warn">The trained model is not installed yet. <a href="{{ url_for('detect') }}">See setup steps</a>.</p>{% endif %}
+</section>
+
+<section aria-labelledby="how">
+  <h2 id="how">How it works</h2>
+  <ol class="steps">
+    <li><strong>Upload</strong><span>Choose a clear JPG or PNG photo of one leaf.</span></li>
+    <li><strong>Check</strong><span>The file type, size and contents are validated.</span></li>
+    <li><strong>Preprocess</strong><span>The image is resized to 224&times;224 exactly as during training.</span></li>
+    <li><strong>Classify</strong><span>MobileNetV2 outputs a score for every class it was trained on.</span></li>
+    <li><strong>Review</strong><span>You see the top class, its score and cautious general information.</span></li>
+  </ol>
+</section>
+
+<section aria-labelledby="supported">
+  <h2 id="supported">What the installed model can recognise</h2>
+  {% if plants %}
+  <p>Only these classes (read from the installed model):</p>
+  <ul class="plants">
+    {% for plant, conditions in plants.items() %}<li><strong>{{ plant }}</strong>: {{ conditions|join(', ') }}</li>{% endfor %}
+  </ul>
+  {% else %}
+  <p>No trained model is installed, so no class list is available yet.</p>
+  {% endif %}
+  <p class="notice">Anything outside these classes (other plants, other diseases, non-leaf photos) cannot be recognised correctly.</p>
+</section>
+{% endblock %}

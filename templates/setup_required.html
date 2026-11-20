@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Model setup required{% endblock %}
+{% block content %}
+<h1>Trained model required</h1>
+<p class="notice warn" role="alert">The application cannot make predictions because no usable trained model was found.
+It will never invent results.</p>
+<p><strong>Reason:</strong> {{ reason }}</p>
+<h2>How to get a model</h2>
+<h3>Option A: train locally (Windows)</h3>
+<pre>scripts\setup_windows.bat
+scripts\train_windows.bat</pre>
+<h3>Option B: train on Google Colab, then copy the files</h3>
+<p>Run <code>colab/Plant_Disease_Classification_Training.ipynb</code>, download the model files and place these
+three files in the <code>models/</code> folder:</p>
+<pre>plant_disease_model.keras
+class_names.json
+model_info.json</pre>
+<p>Then reload this page (no restart needed). See the README for full instructions.</p>
+{% endblock %}

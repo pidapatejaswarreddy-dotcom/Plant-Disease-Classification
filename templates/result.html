@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Result{% endblock %}
+{% block content %}
+<h1>Prediction result</h1>
+{% for w in warnings %}<p class="notice warn">{{ w }}</p>{% endfor %}
+{% if model.info and model.info.training_mode == 'subset' %}
+<p class="notice warn">This model was trained on a reduced subset as a pipeline check; do not rely on this prediction.</p>
+{% endif %}
+<div class="result-grid">
+  <figure class="upload-card">
+    <img src="{{ thumbnail }}" alt="Uploaded leaf image">
+    <figcaption>{{ filename }}</figcaption>
+  </figure>
+  <div class="card">
+    {% if result.inconclusive %}
+      <h2>Inconclusive result</h2>
+      <p class="notice warn">The top score ({{ result.confidence_percent }}%) is below {{ (result.low_conf_threshold * 100)|round|int }}%.
+      The image may not be a leaf from a supported class, or may be unclear. No diagnosis is shown.</p>
+      <p>Closest classes found (not a diagnosis):</p>
+    {% else %}
+      {% set p = result.prediction %}
+      <p class="badge {{ 'ok' if p.status == 'healthy' else 'bad' }}">{{ p.status|capitalize }}</p>
+      <h2>{{ p.plant }}: {{ p.condition }}</h2>
+      <p class="score-label" id="score-label">Model score: <strong>{{ result.confidence_percent }}%</strong></p>
+      <progress value="{{ result.confidence_percent }}" max="100" aria-labelledby="score-label"></progress>
+      <h3>About this class</h3>
+      <p>{{ p.description }}</p>
+      <h3>General guidance (educational only)</h3>
+      <ul>{% for r in p.recommendations %}<li>{{ r }}</li>{% endfor %}</ul>
+      <h3>Other likely classes</h3>
+    {% endif %}
+    <table>
+      <thead><tr><th>Class</th><th>Score</th></tr></thead>
+      <tbody>{% for t in result.top %}<tr><td>{{ t.plant }}: {{ t.condition }}</td><td>{{ '%.1f'|format(t.confidence * 100) }}%</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</div>
+<section class="notice">
+  <strong>Please note:</strong>
+  <ul>
+    <li>The score is the model's softmax output. It is <em>not</em> a calibrated probability; calibration has not been implemented or verified, and neural networks are often over-confident.</li>
+    <li>The classifier only knows its trained classes and cannot guarantee a diagnosis. Confirm with an agricultural expert before any action.</li>
+    <li>Your image was analysed in memory and not stored on the server.</li>
+  </ul>
+</section>
+<p><a class="btn" href="{{ url_for('detect') }}">Analyse another image</a></p>
+{% endblock %}

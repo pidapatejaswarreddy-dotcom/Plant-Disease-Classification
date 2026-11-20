@@ -1,0 +1,17 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+# Large / generated artefacts (never commit)
+dataset/*
+!dataset/.gitkeep
+models/*
+!models/.gitkeep
+results/*
+!results/.gitkeep
+*.zip
+.env
+*.log
+demo_images/

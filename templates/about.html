@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}About the project{% endblock %}
+{% block content %}
+<h1>About this project</h1>
+<section>
+  <h2>Objective</h2>
+  <p>Classify plant leaf images into healthy / diseased classes using a convolutional neural network trained with
+  transfer learning, and present the result responsibly in a simple web interface.</p>
+</section>
+<section>
+  <h2>Dataset: PlantVillage</h2>
+  <p>Hughes &amp; Salath&eacute; (2015) and Mohanty, Hughes &amp; Salath&eacute; (2016): colour images of healthy and diseased leaves,
+  one folder per crop/disease class.</p>
+  {% if dataset_stats %}
+  <p>Verified in this installation: <strong>{{ dataset_stats.num_images }}</strong> images in <strong>{{ dataset_stats.num_classes }}</strong> classes
+  (smallest class {{ dataset_stats.min_images_in_a_class }}, largest {{ dataset_stats.max_images_in_a_class }}).</p>
+  {% else %}<p class="notice">Dataset statistics are not available yet (run <code>training/prepare_dataset.py</code>).</p>{% endif %}
+  {% if figures['dataset_class_distribution.png'] %}<figure><img src="{{ url_for('results_file', name='dataset_class_distribution.png') }}" alt="Images per class"></figure>{% endif %}
+  {% if figures['dataset_samples.png'] %}<figure><img src="{{ url_for('results_file', name='dataset_samples.png') }}" alt="Sample images from the dataset"><figcaption>Real sample images from the dataset.</figcaption></figure>{% endif %}
+</section>
+<section>
+  <h2>Model</h2>
+  <p>MobileNetV2 (ImageNet pre-trained convolutional base) + global average pooling + dropout + softmax layer. Inputs are resized
+  to 224&times;224; the rescale to [&minus;1, 1] is part of the saved model. Data augmentation (flip, rotation, zoom, contrast) is
+  applied during training only.</p>
+  {% if model.ready %}
+  <table>
+    <tbody>
+      <tr><th scope="row">Model version</th><td>{{ model.info.model_version|default('not recorded', true) }}</td></tr>
+      <tr><th scope="row">Trained at (UTC)</th><td>{{ model.info.trained_at|default('not recorded', true) }}</td></tr>
+      <tr><th scope="row">Classes</th><td>{{ model.info.num_classes|default('not recorded', true) }}</td></tr>
+      <tr><th scope="row">Pre-trained weights</th><td>{% if model.info.pretrained_weights == 'imagenet' %}ImageNet{% elif model.info.pretrained_weights == 'none' %}none (trained from scratch){% else %}not recorded{% endif %}</td></tr>
+      <tr><th scope="row">Training mode</th><td>{{ model.info.training_mode|default('not recorded', true) }}{% if model.info.training_mode == 'subset' %} ({{ model.info.max_per_class }} images per class; pipeline check only){% endif %}</td></tr>
+      {% if model.info.split_sizes %}<tr><th scope="row">Split sizes (train / val / test)</th><td>{{ model.info.split_sizes.get('train') }} / {{ model.info.split_sizes.get('val') }} / {{ model.info.split_sizes.get('test') }}</td></tr>{% endif %}
+    </tbody>
+  </table>
+  {% else %}<p class="notice warn">No trained model is installed: {{ model.reason }}</p>{% endif %}
+</section>
+<section>
+  <h2>Evaluation (held-out test split)</h2>
+  {% if evaluation %}
+  <table>
+    <tbody>
+      <tr><th scope="row">Test images</th><td>{{ evaluation.num_test_images }}</td></tr>
+      <tr><th scope="row">Accuracy</th><td>{{ '%.2f'|format(evaluation.accuracy * 100) }}%</td></tr>
+      <tr><th scope="row">Top-3 accuracy</th><td>{{ '%.2f'|format(evaluation.top3_accuracy * 100) }}%</td></tr>
+      <tr><th scope="row">Macro F1</th><td>{{ '%.3f'|format(evaluation.macro_f1) }}</td></tr>
+      <tr><th scope="row">Weighted F1</th><td>{{ '%.3f'|format(evaluation.weighted_f1) }}</td></tr>
+    </tbody>
+  </table>
+  {% else %}<p class="notice">No evaluation results found. They are written by <code>training/train.py</code> or <code>training/evaluate.py</code>.</p>{% endif %}
+  {% if figures['training_curves.png'] %}<figure><img src="{{ url_for('results_file', name='training_curves.png') }}" alt="Training and validation curves"></figure>{% endif %}
+  {% if figures['confusion_matrix.png'] %}<figure><img src="{{ url_for('results_file', name='confusion_matrix.png') }}" alt="Confusion matrix on the test split"></figure>{% endif %}
+</section>
+<section>
+  <h2>Limitations</h2>
+  <ul>
+    <li>Only the trained classes can be predicted; other plants, diseases or non-leaf images will still receive a (wrong) class unless the score is low.</li>
+    <li>PlantVillage photos are taken under controlled conditions; accuracy on real field photos is usually lower.</li>
+    <li>Scores are uncalibrated softmax outputs, not probabilities of being correct.</li>
+    <li>The guidance shown is general and educational. It is not a treatment recommendation.</li>
+  </ul>
+</section>
+<section>
+  <h2>References</h2>
+  <ul>
+    <li>Hughes, D. P. &amp; Salath&eacute;, M. (2015). An open access repository of images on plant health. arXiv:1511.08060.</li>
+    <li>Mohanty, S. P., Hughes, D. P. &amp; Salath&eacute;, M. (2016). Using deep learning for image-based plant disease detection. Frontiers in Plant Science 7:1419.</li>
+    <li>Sandler, M. et al. (2018). MobileNetV2: Inverted Residuals and Linear Bottlenecks. CVPR.</li>
+  </ul>
+</section>
+{% endblock %}

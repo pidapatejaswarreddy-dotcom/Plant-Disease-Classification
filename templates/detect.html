@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Detect Disease{% endblock %}
+{% block content %}
+<h1>Detect Disease</h1>
+{% if model.info and model.info.training_mode == 'subset' %}
+<p class="notice warn">This model was trained on a reduced subset of the data ({{ model.info.max_per_class }} images per class)
+as a pipeline check. Its predictions are not reliable.</p>
+{% endif %}
+{% if error %}<p class="notice error" role="alert">{{ error }}</p>{% endif %}
+<form id="upload-form" method="post" action="{{ url_for('predict_route') }}" enctype="multipart/form-data"
+      data-max-bytes="{{ max_mb * 1024 * 1024 }}" novalidate>
+  <label class="dropzone" id="dropzone" for="image">
+    <span class="dz-title">Choose a leaf photo</span>
+    <span class="dz-hint">or drag &amp; drop here &middot; JPG / PNG &middot; up to {{ max_mb }} MB</span>
+    <input type="file" id="image" name="image" accept="image/jpeg,image/png,.jpg,.jpeg,.png" required>
+  </label>
+  <p id="client-error" class="notice error" role="alert" hidden></p>
+  <figure id="preview" hidden>
+    <img id="preview-img" alt="Preview of the selected leaf image">
+    <figcaption id="preview-name"></figcaption>
+  </figure>
+  <div class="actions">
+    <button type="submit" class="btn" id="submit-btn" disabled>Detect disease</button>
+    <button type="button" class="btn ghost" id="reset-btn" hidden>Choose another image</button>
+  </div>
+  <p id="loading" class="loading" role="status" hidden><span class="spinner" aria-hidden="true"></span> Analysing image&hellip;</p>
+</form>
+<section class="tips">
+  <h2>Tips for a useful result</h2>
+  <ul>
+    <li>Photograph a single leaf, in focus, on a plain background if possible.</li>
+    <li>Use natural light and fill most of the frame with the leaf.</li>
+    <li>The model was trained on lab-style PlantVillage photos, so field photos may give worse results.</li>
+  </ul>
+</section>
+{% endblock %}
